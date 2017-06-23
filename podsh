@@ -357,7 +357,7 @@ get_safe_filename() {
 # Map content-type of most command podcast formats to file extension.
 get_filename_ext_from_content_type() {
     case $1 in
-        audio/mpeg) echo mp3 ;;
+        audio/mpeg) echo opus ;;
         audio/mp4|*aac*|*x-m4a*) echo m4a ;;
         *ogg*) echo ogg ;;
         *wma*) echo wma ;;
@@ -837,7 +837,12 @@ update_feeds() {
 
                 if [ $retcode -eq 0 ]; then
                    # Save downloaded file
+                   if [ "${filename##*.}" = "opus" ]; then
+                    sox -t mp3 "$cachedest/.download.tmp" -t flac - | opusenc - --bitrate 50k "$cachedest/$filename"
+                    rm -f "$cachedest/.download.tmp"
+                   else
                     mv -f "$cachedest/.download.tmp" "$cachedest/$filename"
+                   fi
                     echo "Saved to: $feed_dir/$filename"
                     dlcount=$((dlcount+1)); echo $dlcount > "$cachedest/.dlcount"
                 else
